@@ -56,7 +56,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      <div>
+      <div className='sm:hidden'>
         {!menuVisible && (
           <img
             onClick={() => setMenuVisible(true)}
