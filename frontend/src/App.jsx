@@ -1,9 +1,9 @@
 import React from 'react'
 
-function App() {
+const App = () => {
   return (
-    <div>
-      
+    <div className='bg-red-700'>
+      hello
     </div>
   )
 }
