@@ -1,11 +1,11 @@
 const images = {};
 
-// Use import.meta.glob to dynamically import all images
-const importAll = import.meta.glob('./assets/*.{png,jpg,jpeg,svg}', { eager: true });
+// Dynamically import all images from the assets folder
+const requireContext = require.context('./', false, /\.(png|jpe?g|svg)$/);
 
-Object.keys(importAll).forEach((key) => {
-  const fileName = key.replace('./assets/', ''); // Remove the folder path
-  images[fileName] = importAll[key].default; // Add the imported image to the object
+requireContext.keys().forEach((fileName) => {
+  const imageName = fileName.replace('./', '').replace(/\.(png|jpe?g|svg)$/, '');
+  images[imageName] = requireContext(fileName);
 });
 
-export const assets = images;
+export { images };
