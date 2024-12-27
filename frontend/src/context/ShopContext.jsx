@@ -1,9 +1,10 @@
 import { createContext } from "react";
-import 
+import images from '../assets/assets'
 
 export const shopContext=createContext();
 
-const shopContextProvider = (props) => {
+const ShopContextProvider = (props) => {
+    const products = [];
 
     const currency='$';
     const delivery_fee=10;
@@ -18,4 +19,4 @@ const shopContextProvider = (props) => {
     )
 }
 
-export default shopContextProvider
+export default ShopContextProvider  
