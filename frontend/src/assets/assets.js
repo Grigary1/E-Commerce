@@ -24,6 +24,9 @@ import img120 from './120.jpg';
 import img121 from './121.jpg';
 import img122 from './122.jpg';
 import img123 from './123.jpg';
+import return_icon from './return_icon.png';
+import quality_icon from './quality_icon.png';
+import exchange_icon from './exchange_icon.png';
 
 export const images = {
   img11,
@@ -49,6 +52,9 @@ export const images = {
   img121,
   img122,
   img123,
+  exchange_icon,
+  return_icon,
+  quality_icon,
 };
 
 export const products = [
