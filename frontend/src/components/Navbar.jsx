@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
-import search_icon from './../assets/search_icon.svg'
-import cross_icon from './../assets/cross_icon.png'
-import user_icon from './../assets/user_icon.png'
-import cart_icon from './../assets/cart_icon.png'
-import menu_icon from './../assets/menu_icon.png'
-import { Link, NavLink } from 'react-router-dom'
-import logo from './../assets/logo.png'
+import React, { useState } from 'react';
+import search_icon from './../assets/search_icon.svg';
+import cross_icon from './../assets/cross_icon.png';
+import user_icon from './../assets/user_icon.png';
+import cart_icon from './../assets/cart_icon.png';
+import menu_icon from './../assets/menu_icon.png';
+import { Link, NavLink } from 'react-router-dom';
+import logo from './../assets/logo.png';
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -13,23 +13,37 @@ const Navbar = () => {
   return (
     <div className='flex flex-row items-center justify-between py-5 font-medium'>
       {/* Logo */}
-      <img src={logo} className='w-14 h-14' alt="logo not found" />
+      <Link to='/'>
+        <img src={logo} className='w-14 h-14' alt="logo not found" />
+      </Link>
 
       {/* Menu */}
       <ul className='hidden sm:flex gap-5 text-sm text-gray-700'>
-        <NavLink to='/' className='flex flex-col items-center gap-1'>
+        <NavLink
+          to='/'
+          className={({ isActive }) => isActive ? 'flex flex-col items-center gap-1 text-black font-bold' : 'flex flex-col items-center gap-1 text-gray-700'}
+        >
           <p>Home</p>
           <hr className='w-2/4 border-none h-[1.5px] bg-gray-700' />
         </NavLink>
-        <NavLink to='/collection' className='flex flex-col items-center gap-1'>
+        <NavLink
+          to='/collection'
+          className={({ isActive }) => isActive ? 'flex flex-col items-center gap-1 text-black font-bold' : 'flex flex-col items-center gap-1 text-gray-700'}
+        >
           <p>Collection</p>
           <hr className='w-2/4 border-none h-[1.5px] bg-gray-700' />
         </NavLink>
-        <NavLink to='/about' className='flex flex-col items-center gap-1'>
+        <NavLink
+          to='/about'
+          className={({ isActive }) => isActive ? 'flex flex-col items-center gap-1 text-black font-bold' : 'flex flex-col items-center gap-1 text-gray-700'}
+        >
           <p>About</p>
           <hr className='w-2/4 border-none h-[1.5px] bg-gray-700' />
         </NavLink>
-        <NavLink to='/contact' className='flex flex-col items-center gap-1'>
+        <NavLink
+          to='/contact'
+          className={({ isActive }) => isActive ? 'flex flex-col items-center gap-1 text-black font-bold' : 'flex flex-col items-center gap-1 text-gray-700'}
+        >
           <p>Contact</p>
           <hr className='w-2/4 border-none h-[1.5px] bg-gray-700' />
         </NavLink>
@@ -77,10 +91,10 @@ const Navbar = () => {
               alt=""
               className="w-9 h-9 cursor-pointer"
             />
-              <NavLink onClick={()=>setMenuVisible(false)} to="/" className="cursor-pointer">Home</NavLink>
-              <NavLink onClick={()=>setMenuVisible(false)} to="/collection" className="cursor-pointer">Collection</NavLink>
-              <NavLink onClick={()=>setMenuVisible(false)} to="/about" className="cursor-pointer">About</NavLink>
-              <NavLink onClick={()=>setMenuVisible(false)} to="/contact" className="cursor-pointer">Contact</NavLink>
+            <NavLink onClick={() => setMenuVisible(false)} to="/" className="cursor-pointer">Home</NavLink>
+            <NavLink onClick={() => setMenuVisible(false)} to="/collection" className="cursor-pointer">Collection</NavLink>
+            <NavLink onClick={() => setMenuVisible(false)} to="/about" className="cursor-pointer">About</NavLink>
+            <NavLink onClick={() => setMenuVisible(false)} to="/contact" className="cursor-pointer">Contact</NavLink>
           </ul>
         )}
       </div>
