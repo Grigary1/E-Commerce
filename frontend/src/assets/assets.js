@@ -25,6 +25,7 @@ import img121 from './121.jpg';
 import img122 from './122.jpg';
 import img123 from './123.jpg';
 import return_icon from './return_icon.png';
+import logo from './logo.png';
 import quality_icon from './quality_icon.png';
 import exchange_icon from './exchange_icon.png';
 
@@ -34,6 +35,7 @@ export const images = {
   img13,
   img14,
   img15,
+  logo,
   img16,
   img17,
   img18,
