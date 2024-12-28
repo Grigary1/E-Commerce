@@ -1,9 +1,9 @@
 import { createContext } from "react";
-import {products} from '../assets/assets'
+import { products } from "../assets/assets";
 
 export const shopContext=createContext();
 
-const ShopContextProvider = (props) => {
+const shopContextProvider = (props) => {
 
     const currency='$';
     const delivery_fee=10;
@@ -18,4 +18,4 @@ const ShopContextProvider = (props) => {
     )
 }
 
-export default ShopContextProvider  
+export default shopContextProvider
