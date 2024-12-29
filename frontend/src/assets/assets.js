@@ -69,7 +69,7 @@ export const products = [
     name: 'Women Round Neck Cotton Top',
     description: 'A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.',
     price: 50,
-    image: [images.img11],
+    image: [images.img11,images.img12,images.img13,images.img14],
     category: 'Women',
     subCategory: 'Topwear',
     sizes: ['S', 'M', 'L', 'XL'],
