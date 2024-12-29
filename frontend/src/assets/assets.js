@@ -18,6 +18,7 @@ import img114 from './114.jpg';
 import img115 from './115.jpg';
 import img116 from './116.jpg';
 import img117 from './117.jpg';
+import close_icon from './close_icon.png'
 import img118 from './118.jpg';
 import img119 from './119.jpg';
 import img120 from './120.jpg';
@@ -39,6 +40,7 @@ export const images = {
   logo,
   img16,
   img17,
+  close_icon,
   img18,
   img19,
   img110,
