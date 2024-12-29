@@ -57,7 +57,7 @@ const Collections = () => {
 
   useEffect(()=>{
     sortProd();
-  },sortType);
+  },[sortType]);
 
   useEffect(() => {
     applyFilter();
