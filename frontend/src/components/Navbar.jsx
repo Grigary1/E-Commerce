@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import search_icon from './../assets/search_icon.svg';
 import cross_icon from './../assets/cross_icon.png';
 import user_icon from './../assets/user_icon.png';
@@ -6,9 +6,11 @@ import cart_icon from './../assets/cart_icon.png';
 import menu_icon from './../assets/menu_icon.png';
 import { Link, NavLink } from 'react-router-dom';
 import logo from './../assets/logo.png';
+import { shopContext } from '../context/ShopContext';
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
+  const {showSearch,setShowSearch}=useContext(shopContext);
 
   return (
     <div className='flex flex-row items-center justify-between py-5 font-medium'>
@@ -51,7 +53,7 @@ const Navbar = () => {
 
       {/* Icons */}
       <div className="hidden sm:flex items-center gap-6 h-16">
-        <img src={search_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
+        <img onClick={()=>setShowSearch((prev)=>!prev)} src={search_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
         <div className='group relative'>
           <img src={user_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
           <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4'>
