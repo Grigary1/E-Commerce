@@ -1,16 +1,24 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import search_icon from './../assets/search_icon.svg';
 import cross_icon from './../assets/cross_icon.png';
 import user_icon from './../assets/user_icon.png';
 import cart_icon from './../assets/cart_icon.png';
 import menu_icon from './../assets/menu_icon.png';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import logo from './../assets/logo.png';
 import { shopContext } from '../context/ShopContext';
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const {showSearch,setShowSearch}=useContext(shopContext);
+  const location=useLocation();
+  let currPath=useRef(location.pathname);
+  useEffect(()=>{
+    if (location.pathname!==currPath){
+      setShowSearch(false);
+      currPath=location.pathname;
+    }
+  },[location])
 
   return (
     <div className='flex flex-row items-center justify-between py-5 font-medium'>
@@ -93,10 +101,10 @@ const Navbar = () => {
               alt=""
               className="w-9 h-9 cursor-pointer"
             />
-            <NavLink onClick={() => setMenuVisible(false)} to="/" className="cursor-pointer">Home</NavLink>
-            <NavLink onClick={() => setMenuVisible(false)} to="/collection" className="cursor-pointer">Collection</NavLink>
-            <NavLink onClick={() => setMenuVisible(false)} to="/about" className="cursor-pointer">About</NavLink>
-            <NavLink onClick={() => setMenuVisible(false)} to="/contact" className="cursor-pointer">Contact</NavLink>
+            <NavLink onClick={() => {setMenuVisible(false)}} to="/" className="cursor-pointer">Home</NavLink>
+            <NavLink onClick={() => {setMenuVisible(false)}} to="/collection" className="cursor-pointer">Collection</NavLink>
+            <NavLink onClick={() => {setMenuVisible(false)}} to="/about" className="cursor-pointer">About</NavLink>
+            <NavLink onClick={() => {setMenuVisible(false)}} to="/contact" className="cursor-pointer">Contact</NavLink>
           </ul>
         )}
       </div>
