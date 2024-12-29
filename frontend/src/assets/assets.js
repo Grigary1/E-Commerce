@@ -22,6 +22,7 @@ import img118 from './118.jpg';
 import img119 from './119.jpg';
 import img120 from './120.jpg';
 import img121 from './121.jpg';
+import dropdown_icon from './dropdown_icon.png'
 import img122 from './122.jpg';
 import img123 from './123.jpg';
 import return_icon from './return_icon.png';
@@ -57,6 +58,7 @@ export const images = {
   exchange_icon,
   return_icon,
   quality_icon,
+  dropdown_icon
 };
 
 export const products = [
