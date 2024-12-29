@@ -23,6 +23,7 @@ import img118 from './118.jpg';
 import img119 from './119.jpg';
 import img120 from './120.jpg';
 import img121 from './121.jpg';
+import star_icon from './star_icon.png'
 import dropdown_icon from './dropdown_icon.png'
 import img122 from './122.jpg';
 import img123 from './123.jpg';
@@ -52,6 +53,7 @@ export const images = {
   img116,
   img117,
   img118,
+  star_icon,
   img119,
   img120,
   img121,
