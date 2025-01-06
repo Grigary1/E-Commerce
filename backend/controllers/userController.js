@@ -1,5 +1,5 @@
 import userModel from "../models/userModel.js";
-import bcrypt from 'bcrypt';
+import bcrypt, { hash } from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import validator from 'validator'
 
@@ -10,79 +10,46 @@ const createToken = (id) => {
 //Route for user login
 const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        // Find the user in the database by email
-        console.log(userModel);
-        const data = await userModel.findOne({ email: email });
-
-        if (data) {
-            // Compare the provided password with the hashed password stored in the database
-            console.log("data", data);
-            const match = await bcrypt.compare(password, data.hashedPassword);
-
-            if (match) {
-                console.log("Login success");
-                return res.status(200).send({ success: true, message: "Login successful" });
-            } else {
-                return res.status(401).send({ success: false, message: "Invalid credentials" });
-            }
-        } else {
-            // If user not found
-            return res.status(404).send({ success: false, message: "User not found" });
+        const {email,password}=req.body;
+        const data=await userModel.findOne({email});
+        if(!data){
+            return res.status(404).json({success:false,message:"User does not exists"});
+        }
+        const storedPassword=data.password;
+        const match=await bcrypt.compare(password,storedPassword);
+        if (match){
+            return res.status(200).json({success:true,message:"Authentication success"});
         }
     } catch (error) {
-        console.error("Error in login:", error);
-        return res.status(500).send({ success: false, message: "Internal server error" });
+        return res.status(500).json({success:false,message:error});
     }
 };
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-
-        // Check if user already exists
-        const exists = await userModel.findOne({ email });
-        if (exists) {
-            return res.status(400).json({ success: false, message: "User already exists" });
+        const {name,email,password}=req.body;
+        const exists=await userModel.findOne({email});
+        if(exists){
+            return res.json({success:false,message:"User already exists"});
         }
-
-        // Validate input
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({ success: false, message: "Invalid email format" });
+        //validating
+        if(!validator.isEmail(email)){
+            return res.json({success:false,message:"Enter valid email"});
         }
-
-        if (password.length<6) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Password must be at least 8 characters, include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character" 
-            });
+        if(password.length<6){
+            return res.json({success:false,message:"Enter strong password"});
         }
+        const hashedPassword=await bcrypt.hash(password,10);
+        const user=new userModel({
+            name:this.name,
+            email:this.email,
+            password:hashedPassword
+        })
+        await user.save();
+        return res.json({success:true,message:"User added"})
 
-        if (!name || name.trim() === "") {
-            return res.status(400).json({ success: false, message: "Name is required" });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create and save the new user
-        const newUser = new userModel({
-            name,
-            email,
-            hashedPassword
-        });
-
-        const user = await newUser.save();
-
-        // Create a JWT token
-        const token = createToken(user.id);
-
-        console.log("User registered successfully:", user);
-        return res.status(201).json({ success: true, message: "User registered successfully", token });
     } catch (error) {
-        console.error("Error during registration:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.json({success:false,message:error});
     }
 };
 
