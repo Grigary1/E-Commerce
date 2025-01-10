@@ -14,13 +14,13 @@ const Sidebar = () => {
         </NavLink>
 
         {/* List Items */}
-        <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-lg' to='/add'>
+        <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-lg' to='/list'>
             <img className='w-5 h-5' src={assets.list_icon} alt="" />
             <p className='hidden md:block'>List Items</p>
         </NavLink>
 
         {/* Orders */}
-        <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-lg' to='/add'>
+        <NavLink className='flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-lg' to='/orders'>
             <img className='w-5 h-5' src={assets.orders_icon} alt="" />
             <p className='hidden md:block'>Orders</p>
         </NavLink>
