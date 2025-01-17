@@ -21,8 +21,29 @@ const Add = ({ token }) => {
   useEffect(()=>{
     console.log("sizes",sizes);
   },[sizes])
+
+  const onSubmitHandler=async(e)=>{
+    e.preventDefault();
+    try {
+      
+      const formData=new FormData();
+      formData.append("name",name)
+      formData.append("description",description)
+      formData.append("price",price)
+      formData.append("category",category)
+      formData.append("subCategory",subCategory)
+      formData.append("bestSeller",bestSeller)
+      formData.append("sizes",JSON.stringify(sizes))
+      image1 && formData.append("image2",image2)
+      image2 && formData.append("image3",image3)
+      image3 && formData.append("image1",image1)
+      image4 && formData.append("image4",image4)
+    } catch (error) {
+      
+    }
+  }
   return (
-    <form className='flex flex-col w-full items-start gap-3'>
+    <form onSubmit={onSubmitHandler} className='flex flex-col w-full items-start gap-3'>
       <div>
         <p className='mb-2'>Upload Image</p>
         <div className='flex gap-2'>
@@ -109,7 +130,7 @@ const Add = ({ token }) => {
       </div>
 
       <div className='flex gap-2 mt-2'>
-        <input type="checkbox" name="" id="" />
+        <input onChange={()=>setBestSeller(prev=>!prev)} checked={bestSeller} type="checkbox" name="" id="" />
         <label className='cursor-pointer' htmlFor="bestSeller">Add to bestSeller</label>
       </div>
       <button className='w-28 py-3 mt-4 bg-black text-white' type="submit">ADD</button>
