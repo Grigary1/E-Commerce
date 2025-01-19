@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Form } from 'react-router-dom'
 import { assets } from '../assets/assets'
+import axios from 'axios';
+import {backendUrl} from './../App.jsx'
+import { toast } from 'react-toastify';
 
 const Add = ({ token }) => {
 
@@ -34,12 +37,34 @@ const Add = ({ token }) => {
       formData.append("subCategory",subCategory)
       formData.append("bestSeller",bestSeller)
       formData.append("sizes",JSON.stringify(sizes))
-      image1 && formData.append("image2",image2)
-      image2 && formData.append("image3",image3)
-      image3 && formData.append("image1",image1)
-      image4 && formData.append("image4",image4)
-    } catch (error) {
+      image1 && formData.append("image1", image1);
+      image2 && formData.append("image2", image2);
+      image3 && formData.append("image3", image3);
+      image4 && formData.append("image4", image4);
+
       
+      const response = await axios.post(
+        `${backendUrl}/api/product/add`,
+        formData,
+        { headers: { token } }
+      );
+
+      if (response.data.success){
+        toast.success(response.data.message)
+        setName('')
+        setDescription('')
+        setImage1(false)
+        setImage2(false)
+        setImage3(false)
+        setImage4(false)
+        setPrice('')
+      }
+      else{
+        toast.error("Failed to add product")
+      }
+    } catch (error) {
+      console.log("Error occured")
+      toast.error("Failed to add product")
     }
   }
   return (

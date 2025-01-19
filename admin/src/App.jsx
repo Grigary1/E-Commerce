@@ -9,14 +9,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import Orders from './pages/Orders'
 
 export const backendUrl=import.meta.env.VITE_BACKEND_URL;
+export const currency='$'
 console.log(import.meta.env.VITE_BACKEND_URL)
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem('token')?localStorage.getItem('token'):'');
-
   useEffect(()=>{
     localStorage.setItem('token',token);
-
+    console.log("token:",token)
   },[token])
 
   return (

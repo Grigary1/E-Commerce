@@ -22,7 +22,7 @@ const Login = ({setToken}) => {
 
         } catch (error) {
             console.log("Error");
-        }
+        }      
     }
 
   return (
