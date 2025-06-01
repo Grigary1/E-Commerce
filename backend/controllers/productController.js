@@ -1,17 +1,47 @@
 import { v2 as cloudinary } from 'cloudinary';
 import productModel from "../models/productModel.js";
 
+
+export const productDetails = async (req, res) => {
+    console.log("reached");
+    try {
+
+        const { id } = req.params;
+        console.log("id from back");
+        if (!id) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            })
+        }
+        const product = await productModel.findById(id).lean();
+        console.log("prod");
+        return res.status(200).json({
+            success: true,
+            product
+        })
+        
+    } catch (error) {
+        console.log("error");
+        return res.status(404).json({
+            success: false,
+            message: "Product not found"
+        })
+    }
+}
+
 // Add product
 const addProduct = async (req, res) => {
     try {
+        console.log("port reached")
         // Destructure fields from the request body
         const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
 
         // Validate required fields
         if (!name || !description || !price || !category || !sizes) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Please provide all required fields (name, description, price, category, sizes)." 
+            return res.status(400).json({
+                success: false,
+                message: "Please provide all required fields (name, description, price, category, sizes)."
             });
         }
 
@@ -41,9 +71,9 @@ const addProduct = async (req, res) => {
         try {
             parsedSizes = JSON.parse(sizes);
         } catch (e) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Invalid JSON format for sizes." 
+            return res.status(400).json({
+                success: false,
+                message: "Invalid JSON format for sizes."
             });
         }
 
@@ -57,7 +87,7 @@ const addProduct = async (req, res) => {
             category,
             subCategory,
             sizes: parsedSizes,
-            bestseller: bestseller === 'true',
+            bestSeller: bestseller || false,
             image: imageUrls,
             date: Date.now(),
         });
@@ -68,17 +98,17 @@ const addProduct = async (req, res) => {
         await product.save();
 
         // Send a success response
-        res.status(201).json({ 
-            success: true, 
-            message: "Product added successfully", 
-            product 
+        res.status(201).json({
+            success: true,
+            message: "Product added successfully",
+            product
         });
     } catch (error) {
         console.error("Error adding product:", error.message);
-        res.status(500).json({ 
-            success: false, 
-            message: "An error occurred while adding the product.", 
-            error: error.message 
+        res.status(500).json({
+            success: false,
+            message: "An error occurred while adding the product.",
+            error: error.message
         });
     }
 };
@@ -91,10 +121,36 @@ export default addProduct;
 //list product
 const listProduct = async (req, res) => {
     try {
-        const products=await productModel.find({});
-        return res.status(200).json({products});
+        const q = req.query.q?.trim() || null;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const query = q ? {
+            name: {
+                $regex: q, $options: 'i'
+            }
+        } : {};
+        const skip = (page - 1) * limit;
+
+        const [products, totalProducts] = await Promise.all([
+            productModel.find(query, {
+                name: 1,
+                image: { $arrayElemAt: ["$image", 0] },
+                price: 1,
+                _id: 1
+            }).skip(skip).limit(limit).lean(),
+            productModel.countDocuments(query)
+        ]);
+        const result = res.json({
+            success: true,
+            products,
+            totalProducts,
+            totalPages: Math.ceil(totalProducts / limit),
+            currentPage: page
+        });
+        console.log("result", result);
+        return result
     } catch (error) {
-        console.log("Error : ",error.message);
+        console.log("Error : ", error.message);
         return res.status(400).send({});
     }
 }
@@ -102,10 +158,10 @@ const listProduct = async (req, res) => {
 //remove product
 const removeProduct = async (req, res) => {
     try {
-        const product=await productModel.findByIdAndDelete(req.body.id);
-        res.status(200).json({success:true,message:`product deleted ${product}`})
+        const product = await productModel.findByIdAndDelete(req.body.id);
+        res.status(200).json({ success: true, message: `product deleted ${product}` })
     } catch (error) {
-        console.log("Error",error.message);
+        console.log("Error", error.message);
         return res.status(400).json({});
     }
 }
@@ -113,12 +169,12 @@ const removeProduct = async (req, res) => {
 //single product
 const singleProduct = async (req, res) => {
     try {
-        const {productId}=req.body;
+        const { productId } = req.body;
         if (!productId) return res.status(400).json({});
-        const product=await productModel.findById(productId);
-        res.status(200).json({product});
+        const product = await productModel.findById(productId);
+        res.status(200).json({ product });
     } catch (error) {
-        console.log("Error",error.message);
+        console.log("Error", error.message);
         return res.status(400).json({});
     }
 }

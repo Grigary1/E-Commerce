@@ -67,6 +67,7 @@ const Add = ({ token }) => {
       toast.error("Failed to add product")
     }
   }
+  useEffect(()=>{console.log("Backend seller",bestSeller)})
   return (
     <form onSubmit={onSubmitHandler} className='flex flex-col w-full items-start gap-3'>
       <div>

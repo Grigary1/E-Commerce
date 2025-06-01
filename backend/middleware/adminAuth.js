@@ -1,4 +1,4 @@
-import jwr from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const adminAuth=async (req,res,next) => {
     try {
@@ -8,7 +8,7 @@ const adminAuth=async (req,res,next) => {
         if (token_decode!==process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) return res.json({success:false,message:"Not authorised"});
         next();
     } catch (error) {
-        console.log("Error");
+        console.log("Error in auth");
         return res.status(400);
     }
 }
