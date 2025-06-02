@@ -53,6 +53,7 @@ const ShopContextProvider = (props) => {
     };
 
     const addToCart = (itemId, size) => {
+        console.log("add cart",itemId)
         let item = cartItems.find(item => item.id === itemId);
         if (item) {
             item[size] = (item[size] || 0) + 1;
@@ -65,7 +66,8 @@ const ShopContextProvider = (props) => {
                 }
             );
         }
-        console.log("cartItems", cartItems);
+        console.log("Cartitems",cartItems);
+        toast.success("Item added to cart\n");
     }
 
     const getCartCount = () => {
@@ -82,6 +84,7 @@ const ShopContextProvider = (props) => {
             }
             console.log(totalCount);
         }
+        console.log("cart count",totalCount);
         return totalCount;
     };
     useEffect(() => {
