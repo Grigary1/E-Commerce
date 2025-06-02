@@ -8,15 +8,18 @@ import { toast } from 'react-toastify';
 const Product = () => {
   let { productId } = useParams();
   console.log("id", productId);
-  const { currency, addToCart, getProductDetails, productDetails } = useContext(shopContext);
+  const { currency, addToCart, getProductDetails, productDetails,getCartCount } = useContext(shopContext);
   const [image, setImage] = useState(null);
   const [size, setSize] = useState('');
-  const handleCart = () => {
+  const handleCart = async() => {
+    console.log("calling cart");
     if (!size) {
       toast.error("Specify size");
       return;
     }
-    addToCart(productId, size);
+    //toast.loading("Adding product to cart");
+    await addToCart(productId, size);
+    getCartCount();
   }
   useEffect(() => {
     getProductDetails(productId);

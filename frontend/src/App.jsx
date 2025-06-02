@@ -1,5 +1,5 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, useParams, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Collections from './pages/Collections'
 import About from './pages/About'
@@ -12,23 +12,39 @@ import Orders from './pages/Orders'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
+import Signup from './pages/Signup'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
+  const location = useLocation();
+  const [isVisible, setIsVisible] = useState(true);
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/signin') || path.includes('/signup')) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
+    }
+  }, [location]);
   return (
     <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9nw]'>
-    <Navbar/>
-    <SearchBar/>
+      {isVisible && <Navbar />}
+      <SearchBar />
+      <ToastContainer />
       <Routes>
-        <Route path='/' element={<Home/>}/>
-        <Route path='/collection' element={<Collections/>}/>
-        <Route path='/about' element={<About/>}/>
-        <Route path='/contact' element={<Contact/>}/>
-        <Route path='/product/details/:productId' element={<Product/>}/>
-        <Route path='/cart' element={<Cart/>}/>
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/orders' element={<Orders/>}/>
+        <Route path='/' element={<Home />} />
+        <Route path='/collection' element={<Collections />} />
+        <Route path='/about' element={<About />} />
+        <Route path='/contact' element={<Contact />} />
+        <Route path='/product/details/:productId' element={<Product />} />
+        <Route path='/cart' element={<Cart />} />
+        <Route path='/orders' element={<Orders />} />
+        <Route path='/signin' element={<Login />} />
+        <Route path='/signup' element={<Signup />} />
+
       </Routes>
-      <Footer/>
+      {isVisible && <Footer />}
     </div>
   )
 }

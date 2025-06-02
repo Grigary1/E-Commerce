@@ -2,6 +2,7 @@ import express from 'express';
 import {addProduct,listProduct,productDetails,removeProduct,singleProduct} from './../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
+import { userAuth } from '../middleware/userAuth.js';
 
 const productRouter=express.Router();
 
@@ -16,5 +17,6 @@ productRouter.post('/remove',adminAuth,removeProduct);
 productRouter.post('/single',adminAuth,singleProduct);
 productRouter.get('/list',listProduct);
 productRouter.get('/details/:id',productDetails)
+//productRouter.get('/cart',userAuth,addToCart);
 
 export default productRouter;
