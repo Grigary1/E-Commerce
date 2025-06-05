@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useParams, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Collections from './pages/Collections'
@@ -15,10 +15,14 @@ import SearchBar from './components/SearchBar'
 import Signup from './pages/Signup'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import LoginModal from './components/LoginModal'
+import { shopContext } from './context/ShopContext'
 
 const App = () => {
   const location = useLocation();
+  const {loginModalVisible,setLoginModalVisible}=useContext(shopContext);
   const [isVisible, setIsVisible] = useState(true);
+  const [modalVisible,setModalVisible]=useState(false);
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/signin') || path.includes('/signup')) {
@@ -27,11 +31,15 @@ const App = () => {
       setIsVisible(true);
     }
   }, [location]);
+  useEffect(()=>{
+    loginModalVisible?setModalVisible(true):setModalVisible(false);
+  },[loginModalVisible])
   return (
     <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9nw]'>
       {isVisible && <Navbar />}
       <SearchBar />
       <ToastContainer />
+      {modalVisible&&<LoginModal/>}
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/collection' element={<Collections />} />

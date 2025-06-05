@@ -23,7 +23,7 @@ export default function Login() {
   const [otpError, setOtpError] = useState('');
 
   const inputRefs = useRef([]);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const translations = {
     en: {
@@ -83,7 +83,7 @@ export default function Login() {
     else if (!validateEmail(email)) setEmailError('Invalid email address');
     if (!password) setPasswordError('Password is required');
 
-    const toastId=toast.loading("Please wait");
+    const toastId = toast.loading("Please wait");
     try {
       const res = await axios.post(`${backendUrl}/api/user/login`, {
         email,
@@ -96,11 +96,11 @@ export default function Login() {
           isLoading: false,
           autoClose: 3000,
         });
-        console.log(res.data.message);
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId",res.data.user.id);
         navigate('/');
       }
-      else{
+      else {
         toast.update(toastId, {
           render: 'Something went wrong 😢',
           type: 'error',
@@ -126,7 +126,7 @@ export default function Login() {
       setPasswordMismatch(true);
       return;
     }
-    const toastID=toast.loading("Registering user");
+    const toastID = toast.loading("Registering user");
     try {
       const res = await axios.post(`${backendUrl}/api/user/register`, {
         name,

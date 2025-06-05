@@ -4,23 +4,41 @@ import cross_icon from './../assets/cross_icon.png';
 import user_icon from './../assets/user_icon.png';
 import cart_icon from './../assets/cart_icon.png';
 import menu_icon from './../assets/menu_icon.png';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import logo from './../assets/logo.png';
 import { shopContext } from '../context/ShopContext';
+import { toast } from 'react-toastify';
+import LoginModal from './LoginModal';
 
 const Navbar = () => {
   const [menuVisible, setMenuVisible] = useState(false);
-  const {showSearch,setShowSearch,getCartCount}=useContext(shopContext);
-  
-  const location=useLocation();
-  let currPath=useRef(location.pathname);
-  useEffect(()=>{
-    if (location.pathname!==currPath){
+  const { showSearch, setShowSearch, getCartCount, loginModalVisible, setLoginModalVisible } = useContext(shopContext);
+
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  let currPath = useRef(location.pathname);
+  useEffect(() => {
+    if (location.pathname !== currPath) {
       setShowSearch(false);
-      currPath=location.pathname;
+      currPath = location.pathname;
     }
-  },[location])
-  return (
+  }, [location])
+
+  const handleNavigate = () => {
+    const token = localStorage.getItem("token");
+    console.log("calling handle : ",token);
+    if (!token) {
+      setLoginModalVisible(true);
+      console.log("modal if not token", loginModalVisible)
+    }
+    else {
+      setLoginModalVisible(false);
+      navigate('/cart');
+      console.log("modal", loginModalVisible)
+    }
+  }
+  return(
     <div className='flex flex-row items-center justify-between py-5 font-medium'>
       {/* Logo */}
       <Link to='/'>
@@ -61,7 +79,7 @@ const Navbar = () => {
 
       {/* Icons */}
       <div className="hidden sm:flex items-center gap-6 h-16">
-        <img onClick={()=>setShowSearch((prev)=>!prev)} src={search_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
+        <img onClick={() => setShowSearch((prev) => !prev)} src={search_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
         <div className='group relative'>
           <img src={user_icon} alt="Icon not found" className="w-9 h-9 cursor-pointer" />
           <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4'>
@@ -73,10 +91,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        <Link to='/cart' className='relative'>
+        <p onClick={() => handleNavigate()} className='relative'>
           <img src={cart_icon} alt="" className='w-9 h-9' />
           <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]'>{getCartCount()}</p>
-        </Link>
+        </p>
       </div>
 
       {/* Mobile Menu */}
@@ -101,15 +119,14 @@ const Navbar = () => {
               alt=""
               className="w-9 h-9 cursor-pointer"
             />
-            <NavLink onClick={() => {setMenuVisible(false)}} to="/" className="cursor-pointer">Home</NavLink>
-            <NavLink onClick={() => {setMenuVisible(false)}} to="/collection" className="cursor-pointer">Collection</NavLink>
-            <NavLink onClick={() => {setMenuVisible(false)}} to="/about" className="cursor-pointer">About</NavLink>
-            <NavLink onClick={() => {setMenuVisible(false)}} to="/contact" className="cursor-pointer">Contact</NavLink>
+            <NavLink onClick={() => { setMenuVisible(false) }} to="/" className="cursor-pointer">Home</NavLink>
+            <NavLink onClick={() => { setMenuVisible(false) }} to="/collection" className="cursor-pointer">Collection</NavLink>
+            <NavLink onClick={() => { setMenuVisible(false) }} to="/about" className="cursor-pointer">About</NavLink>
+            <NavLink onClick={() => { setMenuVisible(false) }} to="/contact" className="cursor-pointer">Contact</NavLink>
           </ul>
         )}
       </div>
     </div>
   );
 }
-
 export default Navbar;

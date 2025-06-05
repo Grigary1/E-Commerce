@@ -1,53 +1,205 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { shopContext } from '../context/ShopContext'
-import { useSearchParams } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { shopContext } from '../context/ShopContext';
 import Title from '../components/Title';
+import { PlusIcon, MinusIcon } from '@heroicons/react/solid';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Cart = () => {
-  const {products,currency,cartItems}=useContext(shopContext);
-  const [cartData,setCartData]=useState([]);
-  useEffect(()=>{
-    const tempData=[];
-    for (const items in cartItems){
-      for(const item in cartItems[items]){
-        if(cartItems[items][item]>0){
-          tempData.push(
-            {
-              id:items,
-              size:item,
-              quantity:cartItems[items][item]
-            }
-          )
-        }
-      }
+  const { cartData, fetchCartDetails } = useContext(shopContext);
+  const [amount, setAmount] = useState(0);
+
+  useEffect(() => {
+    fetchCartDetails();
+  }, []);
+
+  useEffect(() => {
+    if (cartData && Array.isArray(cartData)) {
+      const total = cartData.reduce((acc, item) => acc + item.price * item.quantity, 0);
+      setAmount(total);
     }
-    setCartData(tempData);
-  },[cartItems]);
-  return (
-    <div className='border-t pt-14'>
-      <div className='text-2xl mb-3'>
-      <Title text1={'YOUR'}text2={'CART'}/>
+  }, [cartData]);
+
+  const token = localStorage.getItem('token');
+
+  const updateCartQuantity = async (productId, action) => {
+    try {
+      const res = await axios.patch(
+        `${backendUrl}/api/cart/update`,
+        { productId, action },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data.success) {
+        fetchCartDetails();
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.error('Error updating cart:', error.message);
+      toast.error('Something went wrong');
+    }
+  };
+  const navigate=useNavigate();
+  const handleQuantity = (action, id, no) => {
+    if (action === 'increase') {
+      updateCartQuantity(id, 'add');
+    } else if (no > 1) {
+      updateCartQuantity(id, 'sub');
+    }
+    // if quantity is already 1 and you press decrease, do nothing
+  };
+
+  if (!cartData) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="text-lg text-gray-600">Loading…</span>
       </div>
-      <div>
-        {
-          cartData.map((item,index)=>{
-            const productData=products.find((product)=>product.id==item.id);
-            return (
-              <div key={index} className='py-4 border-t border-b text-gray-700 grid grid-cols-[4fr_o.5fr_0.5fr] sm:grid-cols-[4fr_2fr_0.5fr] items-center gap-4'>
-                <div className='flex items-start gap-6'>
-                product{productData}
-                  {/* <img className='w-16 sm:w-20' src={productData.image} alt="" /> */}
-                  {/* <div>
-                    <p className='text-xs sm:text-lg font-medium'>{productData.name}</p>
-                  </div> */}
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Title */}
+      <div className="text-2xl font-semibold mb-6">
+        <Title text1="YOUR" text2="CART" />
+      </div>
+
+      {/* Table Header (visible md+) */}
+      <div className="hidden md:block">
+        <div className="bg-gray-50 sticky top-0 z-10">
+          <div className="grid grid-cols-12 gap-4 border-b-2 border-gray-300 py-3 px-2">
+            <div className="col-span-5 font-medium text-gray-700">Item</div>
+            <div className="col-span-2 font-medium text-gray-700">Price</div>
+            <div className="col-span-3 font-medium text-gray-700 text-center">Quantity</div>
+            <div className="col-span-2 font-medium text-gray-700 text-right">Total</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Cart Items */}
+      <div className="divide-y divide-gray-200">
+        {cartData.map((item) => (
+          <div
+          onClick={()=>navigate(`/product/details/${item.productId}`)} 
+          key={item._id} className="py-4 hover:bg-gray-50 hover:cursor-pointer transition-colors duration-150">
+            {/* Tablet+ (md+) Row */}
+            <div className="hidden md:grid grid-cols-12 items-center gap-4 px-2">
+              {/* Item Info */}
+              <div className="col-span-5 flex items-center space-x-4">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-16 h-16 rounded object-cover border"
+                />
+                <div>
+                  <div className="text-lg font-medium text-gray-800">{item.name}</div>
+                  <div className="text-sm text-gray-500">
+                    Size: {item.size} &middot; {item.category}
+                  </div>
                 </div>
               </div>
-            )
-          })
-        }
+
+              {/* Price */}
+              <div className="col-span-2 text-gray-800">₹{item.price.toFixed(2)}</div>
+
+              {/* Quantity Buttons */}
+              <div className="col-span-3 flex justify-center items-center space-x-2">
+                <button
+                  onClick={() => handleQuantity('decrease', item._id, item.quantity)}
+                  className="p-2 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
+                >
+                  <MinusIcon className="w-5 h-5 text-gray-700" />
+                </button>
+                <span className="text-lg text-gray-800">{item.quantity}</span>
+                <button
+                  onClick={() => handleQuantity('increase', item._id, item.quantity)}
+                  className="p-2 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
+                >
+                  <PlusIcon className="w-5 h-5 text-gray-700" />
+                </button>
+              </div>
+
+              {/* Total */}
+              <div className="col-span-2 text-right text-gray-800">
+                ₹{(item.price * item.quantity).toFixed(2)}
+              </div>
+            </div>
+
+            {/* Mobile (sm:) Card */}
+            <div className="md:hidden flex flex-col bg-white shadow-sm rounded-lg px-4 py-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-12 h-12 rounded object-cover border"
+                  />
+                  <div>
+                    <div className="text-base font-medium text-gray-800">{item.name}</div>
+                    <div className="text-xs text-gray-500">
+                      Size: {item.size} &middot; {item.category}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-gray-800 font-medium">₹{item.price.toFixed(2)}</div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleQuantity('decrease', item._id, item.quantity)}
+                    className="p-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
+                  >
+                    <MinusIcon className="w-4 h-4 text-gray-700" />
+                  </button>
+                  <span className="text-base text-gray-800">{item.quantity}</span>
+                  <button
+                    onClick={() => handleQuantity('increase', item._id, item.quantity)}
+                    className="p-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
+                  >
+                    <PlusIcon className="w-4 h-4 text-gray-700" />
+                  </button>
+                </div>
+                <div className="text-gray-800 font-medium">
+                  ₹{(item.price * item.quantity).toFixed(2)}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary and Checkout */}
+      <div className="mt-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
+        {/* Left side placeholder for future promo codes, etc. */}
+        <div className="w-full md:w-1/2"></div>
+
+        {/* Summary on right */}
+        {amount && <div className="w-full md:w-1/2 lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow">
+          <div className="space-y-4">
+            <div className="flex justify-between text-gray-700">
+              <span>Subtotal</span>
+              <span className="font-medium">₹{amount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-gray-700">
+              <span>Delivery Charges</span>
+              <span className="font-medium text-green-600">Free</span>
+            </div>
+            <div className="border-t border-gray-300 pt-4 flex justify-between text-lg font-semibold text-gray-800">
+              <span>Grand Total</span>
+              <span>₹{amount.toFixed(2)}</span>
+            </div>
+            <button className="w-full bg-black text-white text-center py-3 rounded-md text-lg hover:bg-gray-900 transition">
+              Proceed to Checkout
+            </button>
+          </div>
+        </div>}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Cart
+export default Cart;
