@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import axios from 'axios'
-import debounce from 'lodash';
+import debounce, { head } from 'lodash';
 import { toast } from "react-toastify";
 
 export const shopContext = createContext();
@@ -14,6 +14,31 @@ const ShopContextProvider = (props) => {
     const [products, setProducts] = useState([])
     const [productDetails, setProductDetails] = useState(null);
     const backendUrl = import.meta.env.VITE_BACKEND_URL
+    const [loginModalVisible, setLoginModalVisible] = useState(false);
+    const [cartData, setCartData] = useState(null);
+
+    const token = localStorage.getItem("token");
+    const id = localStorage.getItem("userId");
+    const fetchCartDetails = async () => {
+
+        try {
+            const res = await axios.get(`${backendUrl}/api/cart`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            if (res.data.success) {
+                setCartData(res.data.cartItems);
+            }
+            else {
+                toast.error(res.data.message);
+            }
+            console.log("cart",res.data.cartItems);
+        } catch (error) {
+            toast.error("Something went wrong");
+            console.log("Error : ", error.message);
+        }
+    }
 
     const getProductDetails = async (id) => {
         console.log("Detailing....")
@@ -22,10 +47,10 @@ const ShopContextProvider = (props) => {
             const res = await axios.get(url);
             if (res.data.success) {
                 setProductDetails(res.data.product);
-                console.log("details",res.data);
+                console.log("details", res.data);
             }
             else {
-                console.log("fshj",res.data)
+                console.log("fshj", res.data)
                 //toast.error(res.data.message);
             }
         } catch (error) {
@@ -51,24 +76,49 @@ const ShopContextProvider = (props) => {
             console.error("Fetch error: ", error.message);
         }
     };
+    const addToCart = async (itemId, size) => {
+        const toastId = toast.loading("Adding product to cart");
+        try {
 
-    const addToCart = (itemId, size) => {
-        console.log("add cart",itemId)
-        let item = cartItems.find(item => item.id === itemId);
-        if (item) {
-            item[size] = (item[size] || 0) + 1;
-        }
-        else {
-            cartItems.push(
+            const res = await axios.post(
+                `${backendUrl}/api/cart/add`, {
+                itemId,
+                size
+            },
                 {
-                    id: itemId,
-                    [size]: 1,
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
+            if (res.data.success) {
+                toast.update(toastId, {
+                    render: "Product added to cart",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000
+                });
+            } else {
+                console.log("Error ", res.data.message);
+                toast.update(toastId, {
+                    render: res.data.message || "Failed to add",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 2000
+                });
+            }
+        } catch (error) {
+            toast.update(toastId, {
+                render: error.response?.data?.message || "Something went wrong",
+                type: "error",
+                isLoading: false,
+                autoClose: 2000
+            });
+            console.error("Error:", error.message);
         }
-        console.log("Cartitems",cartItems);
-        toast.success("Item added to cart\n");
-    }
+
+    };
+
 
     const getCartCount = () => {
         let totalCount = 0;
@@ -84,14 +134,15 @@ const ShopContextProvider = (props) => {
             }
             console.log(totalCount);
         }
-        console.log("cart count",totalCount);
+        console.log("cart count", totalCount);
         return totalCount;
     };
     useEffect(() => {
         getProductsData(1, search)
     }, [search])
     const value = {
-        products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, addToCart, getCartCount, cartItems, backendUrl,getProductDetails,productDetails
+        products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, addToCart, getCartCount, cartItems, backendUrl, getProductDetails, productDetails,
+        loginModalVisible, setLoginModalVisible,cartData,fetchCartDetails
     }
     return (
         <shopContext.Provider value={value}>
