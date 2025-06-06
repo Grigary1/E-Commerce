@@ -16,9 +16,47 @@ const ShopContextProvider = (props) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL
     const [loginModalVisible, setLoginModalVisible] = useState(false);
     const [cartData, setCartData] = useState(null);
-
+    const [orderPlaced, setOrderPlaced] = useState(false);
     const token = localStorage.getItem("token");
     const id = localStorage.getItem("userId");
+    const [myOrders, setMyOrders] = useState('');
+
+    const fetchOrderDetails = async () => {
+        try {
+            const res = await axios.get(`${backendUrl}/api/orders/view`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            if (res.data.success) {
+                setMyOrders(res.data.orders);
+                console.log("Orders : ",res.data.orders);
+            }
+            else {
+                toast.error("Something went wrong");
+            }
+        } catch (error) {
+            console.log("Error : ", error.message);
+        }
+    }
+    const placeOrder = async (orderDetails) => {
+        try {
+            const res = await axios.post(`${backendUrl}/api/orders/place`, orderDetails, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+            );
+            if (res.data.success) {
+                return true
+            }
+            toast.error(res.data.message);
+            return false
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
     const fetchCartDetails = async () => {
 
         try {
@@ -33,7 +71,7 @@ const ShopContextProvider = (props) => {
             else {
                 toast.error(res.data.message);
             }
-            console.log("cart",res.data.cartItems);
+            console.log("cart", res.data.cartItems);
         } catch (error) {
             toast.error("Something went wrong");
             console.log("Error : ", error.message);
@@ -142,7 +180,7 @@ const ShopContextProvider = (props) => {
     }, [search])
     const value = {
         products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, addToCart, getCartCount, cartItems, backendUrl, getProductDetails, productDetails,
-        loginModalVisible, setLoginModalVisible,cartData,fetchCartDetails
+        loginModalVisible, setLoginModalVisible, cartData, fetchCartDetails, placeOrder, orderPlaced, setOrderPlaced,myOrders,fetchOrderDetails
     }
     return (
         <shopContext.Provider value={value}>

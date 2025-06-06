@@ -17,6 +17,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoginModal from './components/LoginModal'
 import { shopContext } from './context/ShopContext'
+import Checkout from './pages/Checkout'
+import OrderPlaced from './pages/OrderPlaced'
 
 const App = () => {
   const location = useLocation();
@@ -50,7 +52,8 @@ const App = () => {
         <Route path='/orders' element={<Orders />} />
         <Route path='/signin' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
-
+        <Route path='/user/checkout' element={<Checkout />} />
+        <Route path='/order-placed' element={<OrderPlaced />} />
       </Routes>
       {isVisible && <Footer />}
     </div>
