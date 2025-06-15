@@ -59,15 +59,32 @@ export const viewCart = async (req, res) => {
                 $unwind: "$product"
             },
             {
+                $addFields: {
+                    variant: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: "$product.variants",
+                                    as: "v",
+                                    cond: { $eq: ["$$v._id", "$variantId"] }
+                                }
+                            },
+                            0
+                        ]
+                    }
+                }
+            },
+            {
                 $project: {
-                    _id: "$_id",
-                    size: 1,
+                    _id: 1,
                     quantity: 1,
                     productId: "$product._id",
-                    name: "$product.name",
-                    price: "$product.price",
-                    image: { $arrayElemAt: ["$product.image", 0] },
-                    category: "$product.category"
+                    name: "$product.title",
+                    category: "$product.category",
+                    image: "$product.baseImage",
+                    size: "$variant.size",
+                    color: "$variant.color",
+                    price: "$variant.price"
                 }
             }
         ]);
@@ -96,7 +113,7 @@ export const viewCart = async (req, res) => {
 
 export const addToCart = async (req, res) => {
     try {
-        const { itemId, size } = req.body;
+        const { itemId, size, variantId } = req.body;
         const userId = req.user.id;
         if (!itemId) {
             return res.status(400).json({
@@ -104,13 +121,13 @@ export const addToCart = async (req, res) => {
                 message: "Item not specified"
             })
         }
-        if (!size) {
+        if (!variantId) {
             return res.status(400).json({
                 success: false,
-                message: "Size not specified"
+                message: "Variant not specified"
             })
         }
-        const result = await cartModel.updateOne({ userId, productId: itemId, size }, { $inc: { quantity: 1 } });
+        const result = await cartModel.updateOne({ userId, productId: itemId, variantId }, { $inc: { quantity: 1 } });
         if (result.matchedCount > 0) {
             return res.status(200).json({
                 success: true,
@@ -120,7 +137,7 @@ export const addToCart = async (req, res) => {
         const product = new cartModel({
             userId,
             productId: itemId,
-            size,
+            variantId,
         })
         await product.save();
         return res.status(200).json({

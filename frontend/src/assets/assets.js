@@ -31,8 +31,13 @@ import return_icon from './return_icon.png';
 import logo from './logo.png';
 import quality_icon from './quality_icon.png';
 import exchange_icon from './exchange_icon.png';
+import men from './men.jpeg';
+import women from './women.jpg';
+import kids from './kids.jpeg';
+
 
 export const images = {
+  men,women,kids,
   img11,
   img12,
   img13,

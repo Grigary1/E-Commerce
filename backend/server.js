@@ -30,6 +30,6 @@ app.get('/',(req,res)=>{
 
 
 
-app.listen(PORT,()=>{
-    console.log(`Running on port ${PORT}`);
+app.listen(PORT,'0.0.0.0',()=>{
+    console.log(`Backend on 192.168.1.4:${PORT}`);
 })

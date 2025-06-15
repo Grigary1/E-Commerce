@@ -15,7 +15,7 @@ const OrdersDetailed = () => {
   const [orders, setOrders] = useState(null);
 
   useEffect(() => {
-    fetchOrderDetails();
+    fetchOrderDetails();x
   }, []);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const OrdersDetailed = () => {
             shippingAddress,
             billingAddress,
             items,
-            paymentDetails,     // payment method string, e.g. "cod"
+            paymentDetails,    
             shippingMethod,
             orderStatus,
             createdAt,

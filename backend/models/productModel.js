@@ -1,18 +1,43 @@
 import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    price: { type: Number, required: true },
-    image: { type: Array, required: true },
-    category: { type: String, required: true },
-    subCategory: { type: String, required: true },
-    sizes: { type: Array, required: true },
-    bestSeller: { type: Boolean },
-    date: { type: Number}
-}
-)
+const variantSchema = new mongoose.Schema({
+  sku: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  size: {
+    type: String,
+    required: true,
+    enum: ["XS", "S", "M", "L", "XL", "XXL"],
+  },
+  color: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  stock: {
+    type: Number,
+    default: 0,
+  },
+})
 
-const productModel=mongoose.models.product || mongoose.model("product",productSchema);
+const productSchema = new mongoose.Schema({
+  title: { type: String, required: true, trim: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  brand: { type: String, default: "Generic" },
+  tags: { type: [String], default: [] },
+  baseImage: { type: String, required: true },
+  images: { type: [String], default: [] },
+  variants: { type: [variantSchema], default: [] },
+  isBestSeller: { type: Boolean, default: false }
+
+}, { timestamps: true })
+
+const productModel = mongoose.models.Product || mongoose.model("Product", productSchema);
 
 export default productModel;

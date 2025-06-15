@@ -7,7 +7,7 @@ export const shopContext = createContext();
 
 const ShopContextProvider = (props) => {
     let cartItems = [];
-    const currency = '$';
+    const currency = '₹';
     const delivery_fee = 10;
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(false);
@@ -20,7 +20,56 @@ const ShopContextProvider = (props) => {
     const token = localStorage.getItem("token");
     const id = localStorage.getItem("userId");
     const [myOrders, setMyOrders] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [latestCollections, setLatestCollections] = useState(null);
+    const [bestsellers, setBestsellers] = useState(null);
 
+    const fetchTrending = async (page = 1,q='',brand='',  limit = 10) => {
+        try {
+            const res = await axios.get(`${backendUrl}/api/trending?page=${page}&limit=${limit}&`);
+            if (res.data.success) {
+                setBestsellers(res.data.bestsellers);
+            }
+        } catch (error) {
+            console.log("Error : ", error.message);
+            setLoading(false)
+
+        }
+    }
+
+    const fetchBestSellers = async (page = 1, limit = 10) => {
+        try {
+            const res = await axios.get(`${backendUrl}/api/bestsellers?page=${page}&limit=${limit}`);
+            if (res.data.success) {
+                setBestsellers(res.data.bestsellers);
+            }
+        } catch (error) {
+            console.log("Error : ", error.message);
+            setLoading(false)
+
+        }
+    }
+
+    const fetchLatestCollections = async () => {
+
+        try {
+            setLoading(true);
+            const res = await axios.get(`${backendUrl}/api/products/latestcollections`);
+            if (res.data.success) {
+                setLatestCollections(res.data.latestCollections);
+            }
+            setLoading(false);
+        } catch (error) {
+            console.log("Error : ", error.message);
+            setLoading(false)
+        }
+    }
+
+    const updateFlagVariable = () => {
+        if (cartData != null) {
+            setOrderPlaced(true);
+        }
+    }
     const fetchOrderDetails = async () => {
         try {
             const res = await axios.get(`${backendUrl}/api/orders/view`, {
@@ -30,10 +79,10 @@ const ShopContextProvider = (props) => {
             })
             if (res.data.success) {
                 setMyOrders(res.data.orders);
-                console.log("Orders : ",res.data.orders);
+                console.log("Orders : ", res.data.orders);
             }
             else {
-                toast.error("Something went wrong");
+                toast.error(res.data.message);
             }
         } catch (error) {
             console.log("Error : ", error.message);
@@ -79,7 +128,6 @@ const ShopContextProvider = (props) => {
     }
 
     const getProductDetails = async (id) => {
-        console.log("Detailing....")
         try {
             const url = `${backendUrl}/api/product/details/${id}`;
             const res = await axios.get(url);
@@ -99,29 +147,30 @@ const ShopContextProvider = (props) => {
 
 
     const getProductsData = async (page = 1, q = '', limit = 10) => {
-        console.log("q :", q);
         try {
+            setLoading(true)
             const url = `${backendUrl}/api/product/list?page=${page}&limit=${limit}&q=${encodeURIComponent(q)}`;
             const response = await axios.get(url);
             if (response.data.success) {
                 setProducts(response.data.products);
-                console.log("Fetched products: ", response.data.products);
+                setLoading(false)
             } else {
                 console.error("API Error: ", response.data);
-                toast.error(response.data.message); // Optional
             }
         } catch (error) {
+            setLoading(true)
             console.error("Fetch error: ", error.message);
         }
     };
-    const addToCart = async (itemId, size) => {
+    const addToCart = async (itemId, size, variantId) => {
+
         const toastId = toast.loading("Adding product to cart");
         try {
 
             const res = await axios.post(
                 `${backendUrl}/api/cart/add`, {
                 itemId,
-                size
+                variantId
             },
                 {
                     headers: {
@@ -129,6 +178,7 @@ const ShopContextProvider = (props) => {
                     }
                 }
             );
+            console.log("added : ", res.data)
             if (res.data.success) {
                 toast.update(toastId, {
                     render: "Product added to cart",
@@ -180,7 +230,8 @@ const ShopContextProvider = (props) => {
     }, [search])
     const value = {
         products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, addToCart, getCartCount, cartItems, backendUrl, getProductDetails, productDetails,
-        loginModalVisible, setLoginModalVisible, cartData, fetchCartDetails, placeOrder, orderPlaced, setOrderPlaced,myOrders,fetchOrderDetails
+        loginModalVisible, setLoginModalVisible, cartData, fetchCartDetails, placeOrder, orderPlaced, setOrderPlaced, myOrders, fetchOrderDetails, updateFlagVariable, loading, setLoading,
+        latestCollections, fetchLatestCollections, getProductsData, fetchBestSellers
     }
     return (
         <shopContext.Provider value={value}>
