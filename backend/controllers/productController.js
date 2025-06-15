@@ -1,26 +1,83 @@
 import { v2 as cloudinary } from 'cloudinary';
-import productModel from "../models/productModel.js";
+import productModel from '../models/productModel.js';
+
+export const bestSellers=async(req,res)=>{
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const bestsellers=await productModel.find({},{
+            title: 1,
+            baseImage: 1,
+            'variants.0.price': 1
+        })
+    } catch (error) {
+        
+    }
+}
+
+export const latestCollections = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const collections = await productModel.find({}, {
+            title: 1,
+            baseImage: 1,
+            'variants.0.price': 1
+        }).sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        if (!collections.length) {
+            return res.status(200).json({
+                success: false,
+                message: "Reached End"
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            latestCollections: collections
+        });
+    } catch (error) {
+        console.error("Error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+}
 
 
 export const productDetails = async (req, res) => {
-    console.log("reached");
     try {
 
         const { id } = req.params;
-        console.log("id from back");
         if (!id) {
             return res.status(404).json({
                 success: false,
                 message: "Product not found"
             })
         }
-        const product = await productModel.findById(id).lean();
-        console.log("prod");
+        const product = await productModel.findById(id, {
+            title: 1,
+            description: 1,
+            category: 1,
+            brand: 1,
+            baseImage: 1,
+            images: 1,
+            'variants.size': 1,
+            'variants.color': 1,
+            'variants.price': 1,
+            'variants.stock': 1,
+            'variants._id': 1
+        }).lean();
         return res.status(200).json({
             success: true,
             product
         })
-        
     } catch (error) {
         console.log("error");
         return res.status(404).json({
@@ -30,89 +87,87 @@ export const productDetails = async (req, res) => {
     }
 }
 
-// Add product
-const addProduct = async (req, res) => {
+
+export const addProduct = async (req, res) => {
     try {
-        console.log("port reached")
-        // Destructure fields from the request body
-        const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
+        const { sellerId, title, description, category, brand, tags, variants } = req.body;
 
-        // Validate required fields
-        if (!name || !description || !price || !category || !sizes) {
+        if (!title || !description || !category || !req.files['baseImage']) {
             return res.status(400).json({
                 success: false,
-                message: "Please provide all required fields (name, description, price, category, sizes)."
+                message: "Please provide title, description and category",
             });
         }
-
-        console.log("Request body:", req.body);
-        console.log("Files received:", req.files);
-
-        // Extract image files from req.files
-        const imageFiles = [req.files.image1, req.files.image2, req.files.image3, req.files.image4]
-            .map((fileArray) => fileArray && fileArray[0])
-            .filter((file) => file); // Filter out undefined files
-
-        console.log("Filtered image files:", imageFiles);
-
-        // Upload images to Cloudinary and collect the URLs
-        const imageUrls = await Promise.all(
-            imageFiles.map(async (file) => {
-                console.log(`Uploading file: ${file.path}`);
-                const result = await cloudinary.uploader.upload(file.path, { resource_type: 'image' });
-                return result.secure_url;
-            })
-        );
-
-        console.log("Uploaded image URLs:", imageUrls);
-
-        // Parse the sizes JSON
-        let parsedSizes;
+        const tagArray = Array.isArray(tags) ? tags : (JSON.parse(tags) || []);
+        let variantArray;
         try {
-            parsedSizes = JSON.parse(sizes);
-        } catch (e) {
+            variantArray = JSON.parse(variants);
+        } catch (err) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid JSON format for sizes."
+                message: "Invalid JSON for variants",
             });
         }
 
-        console.log("Parsed sizes:", parsedSizes);
+        const enrichedVariants = variantArray.map((item) => ({
+            sku: item.sku,
+            size: item.size,
+            color: item.color,
+            price: item.price,
+            stock: item.stock || 0,
+        }));
 
-        // Create a new product with the uploaded image URLs
+        let baseImageUrl = "";
+        if (req.files.baseImage && req.files.baseImage[0]) {
+            const file = req.files.baseImage[0];
+            const result = await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+            baseImageUrl = result.secure_url;
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Missing baseImage file",
+            });
+        }
+
+        const ImageFiles = ['image2', 'image3', 'image4']
+            .map(name => req.files[name]?.[0])
+            .filter(Boolean);
+
+        const uploadResults = await Promise.all(
+            ImageFiles.map(file =>
+                cloudinary.uploader.upload(file.path, { resource_type: 'image' })
+            )
+        );
+        const extraImageUrls = uploadResults.map(r => r.secure_url);
+
+        // now build the product with plain-String URLs:
         const product = new productModel({
-            name,
+            seller: sellerId,
+            title,
             description,
-            price: Number(price),
             category,
-            subCategory,
-            sizes: parsedSizes,
-            bestSeller: bestseller || false,
-            image: imageUrls,
-            date: Date.now(),
+            brand: brand || "Generic",
+            tags: tagArray,
+            baseImage: baseImageUrl,     // use the URL you extracted
+            images: extraImageUrls,    // an array of strings
+            variants: enrichedVariants,
         });
-
-        console.log("Product to save:", product);
-
-        // Save the product to the database
         await product.save();
 
-        // Send a success response
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "Product added successfully",
-            product
+            product,
         });
     } catch (error) {
-        console.error("Error adding product:", error.message);
-        res.status(500).json({
+        console.error("Error in addProduct:", error);
+        return res.status(500).json({
             success: false,
-            message: "An error occurred while adding the product.",
-            error: error.message
+            message: "Server error adding product",
+            error: error.message,
         });
     }
 };
-
 
 
 export default addProduct;
@@ -132,12 +187,19 @@ const listProduct = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const [products, totalProducts] = await Promise.all([
-            productModel.find(query, {
-                name: 1,
-                image: { $arrayElemAt: ["$image", 0] },
-                price: 1,
-                _id: 1
-            }).skip(skip).limit(limit).lean(),
+            productModel.aggregate([
+                { $match: query },
+                {
+                    $project: {
+                        _id: 1,
+                        name: "$title",
+                        image: "$baseImage",
+                        price: { $arrayElemAt: ["$variants.price", 0] }
+                    }
+                },
+                { $skip: skip },
+                { $limit: limit }
+            ]),
             productModel.countDocuments(query)
         ]);
         const result = res.json({
@@ -178,4 +240,4 @@ const singleProduct = async (req, res) => {
         return res.status(400).json({});
     }
 }
-export { addProduct, listProduct, removeProduct, singleProduct };
+export { listProduct, removeProduct, singleProduct };

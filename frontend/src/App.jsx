@@ -19,6 +19,7 @@ import LoginModal from './components/LoginModal'
 import { shopContext } from './context/ShopContext'
 import Checkout from './pages/Checkout'
 import OrderPlaced from './pages/OrderPlaced'
+import Overview from './pages/Overview'
 
 const App = () => {
   const location = useLocation();
@@ -44,7 +45,9 @@ const App = () => {
       {modalVisible&&<LoginModal/>}
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/shop/:tag' element={<Overview />} />
         <Route path='/collection' element={<Collections />} />
+        <Route path='/collection/:category' element={<Collections />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/product/details/:productId' element={<Product />} />

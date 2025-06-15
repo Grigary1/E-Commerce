@@ -9,12 +9,15 @@ import { useNavigate } from 'react-router-dom';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Cart = () => {
-  const { cartData, fetchCartDetails } = useContext(shopContext);
+  const { cartData, fetchCartDetails,updateFlagVariable } = useContext(shopContext);
   const [amount, setAmount] = useState(0);
 
   useEffect(() => {
     fetchCartDetails();
   }, []);
+  useEffect(()=>{
+    updateFlagVariable();
+  },[cartData])
 
   useEffect(() => {
     if (cartData && Array.isArray(cartData)) {
@@ -43,7 +46,9 @@ const Cart = () => {
       toast.error('Something went wrong');
     }
   };
-  const navigate=useNavigate();
+
+  const navigate = useNavigate();
+
   const handleQuantity = (action, id, no) => {
     if (action === 'increase') {
       updateCartQuantity(id, 'add');
@@ -84,8 +89,10 @@ const Cart = () => {
       <div className="divide-y divide-gray-200">
         {cartData.map((item) => (
           <div
-          onClick={()=>navigate(`/product/details/${item.productId}`)} 
-          key={item._id} className="py-4 hover:bg-gray-50 hover:cursor-pointer transition-colors duration-150">
+            key={item._id}
+            onClick={() => navigate(`/product/details/${item.productId}`)}
+            className="py-4 hover:bg-gray-50 hover:cursor-pointer transition-colors duration-150"
+          >
             {/* Tablet+ (md+) Row */}
             <div className="hidden md:grid grid-cols-12 items-center gap-4 px-2">
               {/* Item Info */}
@@ -109,14 +116,22 @@ const Cart = () => {
               {/* Quantity Buttons */}
               <div className="col-span-3 flex justify-center items-center space-x-2">
                 <button
-                  onClick={() => handleQuantity('decrease', item._id, item.quantity)}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuantity('decrease', item._id, item.quantity);
+                  }}
                   className="p-2 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
                 >
                   <MinusIcon className="w-5 h-5 text-gray-700" />
                 </button>
                 <span className="text-lg text-gray-800">{item.quantity}</span>
                 <button
-                  onClick={() => handleQuantity('increase', item._id, item.quantity)}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuantity('increase', item._id, item.quantity);
+                  }}
                   className="p-2 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
                 >
                   <PlusIcon className="w-5 h-5 text-gray-700" />
@@ -150,14 +165,22 @@ const Cart = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => handleQuantity('decrease', item._id, item.quantity)}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuantity('decrease', item._id, item.quantity);
+                    }}
                     className="p-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
                   >
                     <MinusIcon className="w-4 h-4 text-gray-700" />
                   </button>
                   <span className="text-base text-gray-800">{item.quantity}</span>
                   <button
-                    onClick={() => handleQuantity('increase', item._id, item.quantity)}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuantity('increase', item._id, item.quantity);
+                    }}
                     className="p-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 rounded-full transition"
                   >
                     <PlusIcon className="w-4 h-4 text-gray-700" />
@@ -174,29 +197,33 @@ const Cart = () => {
 
       {/* Summary and Checkout */}
       <div className="mt-8 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0">
-        {/* Left side placeholder for future promo codes, etc. */}
         <div className="w-full md:w-1/2"></div>
 
-        {/* Summary on right */}
-        {amount && <div className="w-full md:w-1/2 lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow">
-          <div className="space-y-4">
-            <div className="flex justify-between text-gray-700">
-              <span>Subtotal</span>
-              <span className="font-medium">₹{amount.toFixed(2)}</span>
+        {amount !== null && (
+          <div className="w-full md:w-1/2 lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow">
+            <div className="space-y-4">
+              <div className="flex justify-between text-gray-700">
+                <span>Subtotal</span>
+                <span className="font-medium">₹{amount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-gray-700">
+                <span>Delivery Charges</span>
+                <span className="font-medium text-green-600">Free</span>
+              </div>
+              <div className="border-t border-gray-300 pt-4 flex justify-between text-lg font-semibold text-gray-800">
+                <span>Grand Total</span>
+                <span>₹{amount.toFixed(2)}</span>
+              </div>
+              <button
+              onClick={(e)=>{e.stopPropagation();navigate('/order-placed')}}
+                type="button"
+                className="w-full bg-black text-white text-center py-3 rounded-md text-lg hover:bg-gray-900 transition"
+              >
+                Proceed to Checkout
+              </button>
             </div>
-            <div className="flex justify-between text-gray-700">
-              <span>Delivery Charges</span>
-              <span className="font-medium text-green-600">Free</span>
-            </div>
-            <div className="border-t border-gray-300 pt-4 flex justify-between text-lg font-semibold text-gray-800">
-              <span>Grand Total</span>
-              <span>₹{amount.toFixed(2)}</span>
-            </div>
-            <button className="w-full bg-black text-white text-center py-3 rounded-md text-lg hover:bg-gray-900 transition">
-              Proceed to Checkout
-            </button>
           </div>
-        </div>}
+        )}
       </div>
     </div>
   );

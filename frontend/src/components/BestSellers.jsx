@@ -5,13 +5,12 @@ import { shopContext } from "../context/ShopContext";
 const BestSellers = () => {
 
     const [product,setProducts] =useState([]);
-    const {products}=useContext(shopContext)
+    const {products,fetchBestSellers}=useContext(shopContext)
     console.log("Best sellers ",product);
     useEffect(()=>{
-      console.log("best ",products)
-        setProducts(products.filter(product=>product.bestseller===true));
         
-    },[products])
+        fetchBestSellers();
+    },[])
 
   return (
     <div className='my-10'>
