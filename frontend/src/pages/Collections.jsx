@@ -8,15 +8,18 @@ import Filter from "../components/Filter";
 import { useParams } from "react-router-dom";
 
 const Collections = ({ searchResult }) => {
-  const { products, search, showSearch, getProductsData } = useContext(shopContext);
+  const { products, search, showSearch, getProductsData,totalPages } = useContext(shopContext);
   const [filterProducts, setFilterProducts] = useState([]);
   const {category}=useParams();
   
 
-
+  const [page,setPage]=useState(1);
+  const handlePageChange=(e,v)=>{
+    setPage(v);
+  }
   useEffect(() => {
-    getProductsData()
-  }, [])
+    getProductsData(page,'',10);
+  }, [page])
   useEffect(() => {
     if (products.length) {
       setFilterProducts(products)
@@ -64,7 +67,7 @@ const Collections = ({ searchResult }) => {
 
       </div>
       <div className="flex items-center justify-center pt-36">
-        <PaginationRounded />
+        <PaginationRounded page={page} count={totalPages} onChange={handlePageChange}/>
       </div>
     </div>
   );

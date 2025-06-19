@@ -34,8 +34,8 @@ export const viewOrder = async (req, res) => {
                     createdAt: { $first: "$createdAt" },
                     shippingAddress: { $first: "$shippingAddress" },
                     billingAddress: { $first: "$billingAddress" },
-                    paymentDetails:{$first:"$paymentDetails.paymentMethod"},
-                    totalAmount:{$first:"$totalAmount"},
+                    paymentDetails: { $first: "$paymentDetails.paymentMethod" },
+                    totalAmount: { $first: "$totalAmount" },
                     items: {
                         $push: {
                             productId: "$items.productId",
@@ -43,8 +43,8 @@ export const viewOrder = async (req, res) => {
                             price: "$items.price",
                             variant: "$items.variant",
                             productInfo: {
-                                name: "$productDetails.name",
-                                image: "$productDetails.image",
+                                name: "$productDetails.title",
+                                image: "$productDetails.baseImage",
                                 category: "$productDetails.category"
                             }
                         }

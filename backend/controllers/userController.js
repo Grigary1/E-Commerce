@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import validator from 'validator'
 import isEmail from "validator/lib/isEmail.js";
 import nodemailer from "nodemailer";
+import e from "express";
 const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET)
 }
@@ -85,13 +86,13 @@ export const sendOtp = async (req, res) => {
 
 //Route for user login
 const loginUser = async (req, res) => {
+    console.log("loginUser");
     try {
         const { email, password } = req.body;
         const data = await userModel.findOne({ email });
         if (!data) {
-            return res.status(404).json({ success: false, message: "User does not exists" });
+            return res.status(404).json({ success: false, message: "User does not exists" ,});
         }
-        console.log("data",data);
         const storedPassword = data.password;
         const match = await bcrypt.compare(password, storedPassword);
         if (!match) {
@@ -109,6 +110,7 @@ const loginUser = async (req, res) => {
             user: { id: data._id, name: data.name, email: data.email },
         });
     } catch (error) {
+        console.log("Error : ",error.message);
         return res.json({ success: false, message: error.message });
     }
 

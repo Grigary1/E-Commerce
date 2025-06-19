@@ -7,6 +7,7 @@ import userRouter from './routes/userRoute.js';
 import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRouter.js';
 import orderRouter from './routes/orderRouter.js';
+import { downloadInvoice } from './controllers/productController.js';
 
 //App config
 const app=express();
@@ -23,6 +24,7 @@ app.use('/api/user',userRouter);
 app.use('/api/product',productRouter);
 app.use('/api',cartRouter)
 app.use('/api/orders',orderRouter);
+app.get('/api/invoices/download',downloadInvoice);
 //api endpoints
 app.get('/',(req,res)=>{
     res.send("API WORKING");

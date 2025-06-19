@@ -215,7 +215,7 @@ const Cart = () => {
                 <span>₹{amount.toFixed(2)}</span>
               </div>
               <button
-              onClick={(e)=>{e.stopPropagation();navigate('/order-placed')}}
+              onClick={(e)=>{e.stopPropagation();navigate('/user/checkout')}}
                 type="button"
                 className="w-full bg-black text-white text-center py-3 rounded-md text-lg hover:bg-gray-900 transition"
               >
