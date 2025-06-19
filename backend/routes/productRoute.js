@@ -1,5 +1,5 @@
 import express from 'express';
-import {addProduct,bestSellers,latestCollections,listProduct,productDetails,removeProduct,singleProduct} from './../controllers/productController.js'
+import {addProduct,bestSellers,brand,latestCollections,listProduct,productDetails,removeProduct,singleProduct, trending} from './../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 import { userAuth } from '../middleware/userAuth.js';
@@ -20,6 +20,8 @@ productRouter.get('/list',listProduct);
 productRouter.get('/details/:id',productDetails)
 productRouter.get('/latestCollections',latestCollections);
 productRouter.get('/bestsellers',bestSellers);
+productRouter.get('/trending',trending);
+productRouter.get('/brand',brand);
 
 
 export default productRouter;

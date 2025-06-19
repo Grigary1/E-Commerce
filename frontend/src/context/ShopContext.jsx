@@ -23,19 +23,63 @@ const ShopContextProvider = (props) => {
     const [loading, setLoading] = useState(true);
     const [latestCollections, setLatestCollections] = useState(null);
     const [bestsellers, setBestsellers] = useState(null);
+    const [trending, setTrending] = useState(null);
+    const [brand, setBrand] = useState(null);
+    const [totalPages,setTotalPages]=useState(1);
 
-    const fetchTrending = async (page = 1,q='',brand='',  limit = 10) => {
+
+    const MAX_CACHE_SIZE = 50;
+    const brandCache = new Map();
+    const fetchTrending = async (page = 1, category = '', limit = 10) => {
         try {
-            const res = await axios.get(`${backendUrl}/api/trending?page=${page}&limit=${limit}&`);
+            const res = await axios.get(`${backendUrl}/api/product/trending`, {
+                params: {
+                    page,
+                    limit,
+                    q: category,
+                    brand,
+                },
+            });
+
             if (res.data.success) {
-                setBestsellers(res.data.bestsellers);
+                setTrending(res.data.trending);
             }
         } catch (error) {
-            console.log("Error : ", error.message);
-            setLoading(false)
-
+            console.error("Error:", error.message);
+            setLoading(false);
         }
-    }
+    };
+
+    const fetchBrand = async (page = 1, brand, limit = 10) => {
+        const cacheKey = `${brand?.toLowerCase() || 'all'}-p${page}-l${limit}`;
+        if (brandCache.has(cacheKey)) {
+            setBrand(brandCache.get(cacheKey));
+            return;
+        }
+        try {
+            const res = await axios.get(`${backendUrl}/api/product/brand`, {
+                params: {
+                    page,
+                    limit,
+                    brand,
+                },
+            });
+
+            if (res.data.success) {
+                setBrand(res.data.brands);
+                if (brandCache.size >= MAX_CACHE_SIZE) {
+                    const firstKey = brandCache.keys().next().value;
+                    brandCache.delete(firstKey);
+                }
+
+                brandCache.set(cacheKey, res.data.brands);
+            }
+            console.log("Res : ", res.data);
+        } catch (error) {
+            console.error("Error:", error.message);
+            setLoading(false);
+        }
+    };
 
     const fetchBestSellers = async (page = 1, limit = 10) => {
         try {
@@ -79,7 +123,6 @@ const ShopContextProvider = (props) => {
             })
             if (res.data.success) {
                 setMyOrders(res.data.orders);
-                console.log("Orders : ", res.data.orders);
             }
             else {
                 toast.error(res.data.message);
@@ -144,16 +187,28 @@ const ShopContextProvider = (props) => {
         }
     }
 
-
+    const productCache = new Map();
 
     const getProductsData = async (page = 1, q = '', limit = 10) => {
+        const cacheKey = `${page}_${q}_${limit}`
+        if (productCache.has(cacheKey)) {
+            console.log('✅ Loaded from cache');
+            const { products, totalPages } = productCache.get(cacheKey);
+            setProducts(products);
+            setTotalPages(totalPages);
+            return;
+        }
+
         try {
-            setLoading(true)
+            setLoading(true);
             const url = `${backendUrl}/api/product/list?page=${page}&limit=${limit}&q=${encodeURIComponent(q)}`;
             const response = await axios.get(url);
+            console.log("Product details  : ", response.data);
             if (response.data.success) {
-                setProducts(response.data.products);
-                setLoading(false)
+                const { products, totalPages } = response.data;
+                setProducts(products);
+                setTotalPages(totalPages);
+                productCache.set(cacheKey, { products, totalPages });
             } else {
                 console.error("API Error: ", response.data);
             }
@@ -231,7 +286,7 @@ const ShopContextProvider = (props) => {
     const value = {
         products, currency, delivery_fee, search, setSearch, showSearch, setShowSearch, addToCart, getCartCount, cartItems, backendUrl, getProductDetails, productDetails,
         loginModalVisible, setLoginModalVisible, cartData, fetchCartDetails, placeOrder, orderPlaced, setOrderPlaced, myOrders, fetchOrderDetails, updateFlagVariable, loading, setLoading,
-        latestCollections, fetchLatestCollections, getProductsData, fetchBestSellers
+        latestCollections, fetchLatestCollections, getProductsData, fetchBestSellers, fetchTrending, trending, brand, fetchBrand,totalPages
     }
     return (
         <shopContext.Provider value={value}>

@@ -1,18 +1,290 @@
 import { v2 as cloudinary } from 'cloudinary';
 import productModel from '../models/productModel.js';
+import orderModel from '../models/orderModel.js';
+import puppeteer from 'puppeteer';
+import mongoose from 'mongoose';
 
-export const bestSellers=async(req,res)=>{
+const generateInvoiceHTML = (order) => {
+    try {
+        const {
+            _id,
+            shippingMethod,
+            estimatedDelivery,
+            createdAt,
+            shippingAddress,
+            billingAddress,
+            paymentDetails,
+            totalAmount,
+            items
+        } = order;
+
+        const dateStr = new Date(createdAt).toLocaleDateString('en-IN');
+        const deliveryDate = new Date(estimatedDelivery).toLocaleDateString('en-IN');
+
+        const itemsHTML = items.map((item, idx) => {
+            const total = (item.price * item.quantity).toFixed(2);
+            return `
+          <tr>
+            <td class="center">${idx + 1}</td>
+            <td class="left strong">${item.productInfo.name}</td>
+            <td class="left">Category: ${item.productInfo.category} | Size: ${item.variant.size}</td>
+            <td class="right">₹${item.price.toFixed(2)}</td>
+            <td class="center">${item.quantity}</td>
+            <td class="right">₹${total}</td>
+          </tr>
+        `;
+        }).join('');
+
+        return `
+      <html>
+        <head>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+          <style>
+            body { font-family: 'Arial'; padding: 40px; }
+            .text-dark { color: #0e7490 !important; }
+            table th { background-color: #0e7490; color: white; }
+            .logo { max-width: 100px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="card">
+              <div class="card-header p-4">
+                <h3 class="mb-0">Invoice #${_id}</h3>
+                <small>Issued on: ${dateStr}</small>
+              </div>
+              <div class="card-body">
+                <div class="row mb-4">
+                  <div class="col-sm-6">
+                    <h5 class="mb-3">From:</h5>
+                    <h3 class="text-dark mb-1">GCart Store</h3>
+                    <div>29, Store Lane</div>
+                    <div>New Delhi, India</div>
+                    <div>Email: support@gcart.com</div>
+                    <div>Phone: +91 1800-123-4567</div>
+                  </div>
+                  <div class="col-sm-6">
+                    <h5 class="mb-3">To:</h5>
+                    <h3 class="text-dark mb-1">Customer</h3>
+                    <div>${shippingAddress.addressLine1}</div>
+                    <div>${shippingAddress.addressLine2 || ''}</div>
+                    <div>${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}</div>
+                  </div>
+                </div>
+    
+                <div class="table-responsive-sm">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th class="center">#</th>
+                        <th>Item</th>
+                        <th>Description</th>
+                        <th class="right">Price</th>
+                        <th class="center">Qty</th>
+                        <th class="right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${itemsHTML}
+                    </tbody>
+                  </table>
+                </div>
+    
+                <div class="row">
+                  <div class="col-lg-4 col-sm-5"></div>
+                  <div class="col-lg-4 col-sm-5 ml-auto">
+                    <table class="table table-clear">
+                      <tbody>
+                        <tr>
+                          <td class="left"><strong class="text-dark">Payment Method</strong></td>
+                          <td class="right">${paymentDetails.toUpperCase()}</td>
+                        </tr>
+                        <tr>
+                          <td class="left"><strong class="text-dark">Shipping Method</strong></td>
+                          <td class="right">${shippingMethod.toUpperCase()}</td>
+                        </tr>
+                        <tr>
+                          <td class="left"><strong class="text-dark">Expected Delivery</strong></td>
+                          <td class="right">${deliveryDate}</td>
+                        </tr>
+                        <tr>
+                          <td class="left"><strong class="text-dark">Total</strong></td>
+                          <td class="right"><strong class="text-dark">₹${totalAmount.toFixed(2)}</strong></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer bg-white text-center">
+                <p class="mb-0">Thanks for shopping with GCart!</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+      `;
+    } catch (error) {
+        console.log("Error : ", error.message);
+    }
+
+};
+
+
+export const downloadInvoice = async (req, res) => {
+    try {
+        const { invoiceId } = req.query;
+        const order = await orderModel.aggregate([
+            {
+                $match: { userId: new mongoose.Types.ObjectId(invoiceId) }
+            },
+            {
+                $unwind: "$items"
+            },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "items.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: "$productDetails"
+            },
+            {
+                $group: {
+                    _id: "$_id",
+                    orderStatus: { $first: "$orderStatus" },
+                    shippingMethod: { $first: "$shippingMethod" },
+                    estimatedDelivery: { $first: "$estimatedDelivery" },
+                    createdAt: { $first: "$createdAt" },
+                    shippingAddress: { $first: "$shippingAddress" },
+                    billingAddress: { $first: "$billingAddress" },
+                    paymentDetails: { $first: "$paymentDetails.paymentMethod" },
+                    totalAmount: { $first: "$totalAmount" },
+                    items: {
+                        $push: {
+                            productId: "$items.productId",
+                            quantity: "$items.quantity",
+                            price: "$items.price",
+                            variant: "$items.variant",
+                            productInfo: {
+                                name: "$productDetails.title",
+                                image: "$productDetails.baseImage",
+                                category: "$productDetails.category"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            }
+        ]);
+
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const invoiceHTML = generateInvoiceHTML(order);
+
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.setContent(invoiceHTML, { waitUntil: 'networkidle0' });
+
+        const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+        await browser.close();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoiceId}.pdf"`);
+        res.send(pdfBuffer);
+
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+export const brand = async (req, res) => {
+    console.log("Reached brand")
+    try {
+        const brands = await productModel.distinct('brand');
+        return res.status(200).json({
+            success: true,
+            brands,
+        });
+
+    } catch (error) {
+        console.error("Error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+};
+
+
+
+export const trending = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-        const bestsellers=await productModel.find({},{
+
+        const q = req.query.q?.trim() || '';
+
+        const filter = {};
+        if (q) filter.category = q;
+
+
+        const trendingProducts = await productModel.aggregate([
+            { $match: filter },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    title: 1,
+                    baseImage: 1,
+                    description: 1,
+                    price: { $arrayElemAt: ['$variants.price', 0] }
+                }
+            }
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            trending: trendingProducts,
+        });
+
+    } catch (error) {
+        console.error("Error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
+
+
+export const bestSellers = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+        const bestsellers = await productModel.find({}, {
             title: 1,
             baseImage: 1,
             'variants.0.price': 1
         })
     } catch (error) {
-        
+        console.error("Error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
     }
 }
 

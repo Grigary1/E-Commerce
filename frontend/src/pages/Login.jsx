@@ -83,12 +83,12 @@ export default function Login() {
     else if (!validateEmail(email)) setEmailError('Invalid email address');
     if (!password) setPasswordError('Password is required');
 
-    const toastId = toast.loading("Please wait");
+    const toastId = toast.loading('Please wait');
     try {
       const res = await axios.post(`${backendUrl}/api/user/login`, {
         email,
         password
-      })
+      });
       if (res.data.success) {
         toast.update(toastId, {
           render: 'Success! 🎉',
@@ -96,29 +96,35 @@ export default function Login() {
           isLoading: false,
           autoClose: 3000,
         });
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userId",res.data.user.id);
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('userId', res.data.user.id);
         navigate('/');
-      }
-      else {
+      } else {
+        // Handles 2xx responses where success is false
         toast.update(toastId, {
-          render: 'Something went wrong 😢',
+          render: res.data.message,
           type: 'error',
           isLoading: false,
           autoClose: 3000,
         });
-        console.log(res.data.message);
       }
     } catch (error) {
-      console.log(error.message);
+      // Axios will throw for status codes outside of 2xx
+      const serverMsg =
+        error.response?.data?.message ||
+        error.response?.statusText ||
+        error.message;
+      console.log('Login error:', serverMsg);
+
       toast.update(toastId, {
-        render: 'Something went wrong 😢',
+        render: serverMsg,
         type: 'error',
         isLoading: false,
         autoClose: 3000,
       });
     }
   };
+
 
   const handleRegister = async () => {
     setPasswordMismatch(false);

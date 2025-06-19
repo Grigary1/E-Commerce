@@ -9,13 +9,31 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/solid';
 import { shopContext } from '../context/ShopContext';
+import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 const OrdersDetailed = () => {
   const { myOrders, fetchOrderDetails } = useContext(shopContext);
   const [orders, setOrders] = useState(null);
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const downloadInvoice = async ({ invoiceId }) => {
+    console.log("inv", invoiceId)
+    try {
+      const response = await axios.get(`${backendUrl}/api/invoice/download`, {
+        responseType: 'blob',
+        params: {
+          invoiceId,
+        },
+      });
+      if (res.data.success) {
+        saveAs(response.data.invoice, `invoice-${invoiceId}.pdf`);
+      }
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+    }
+  }
   useEffect(() => {
-    fetchOrderDetails();x
+    fetchOrderDetails();
   }, []);
 
   useEffect(() => {
@@ -39,7 +57,7 @@ const OrdersDetailed = () => {
             shippingAddress,
             billingAddress,
             items,
-            paymentDetails,    
+            paymentDetails,
             shippingMethod,
             orderStatus,
             createdAt,
@@ -127,11 +145,10 @@ const OrdersDetailed = () => {
                         <div key={idx} className="relative flex-1 flex flex-col items-center">
                           {/* Circle */}
                           <div
-                            className={`w-10 h-10 flex items-center justify-center rounded-full border-2 ${
-                              isCompleted
-                                ? 'border-cyan-600 bg-cyan-600'
-                                : 'border-gray-300 bg-white'
-                            }`}
+                            className={`w-10 h-10 flex items-center justify-center rounded-full border-2 ${isCompleted
+                              ? 'border-cyan-600 bg-cyan-600'
+                              : 'border-gray-300 bg-white'
+                              }`}
                           >
                             {isCompleted ? (
                               <CheckIcon className="w-6 h-6 text-white" />
@@ -149,9 +166,8 @@ const OrdersDetailed = () => {
 
                           {/* Label & details */}
                           <p
-                            className={`mt-2 text-sm font-medium ${
-                              isCompleted ? 'text-gray-600' : 'text-gray-800'
-                            } text-center`}
+                            className={`mt-2 text-sm font-medium ${isCompleted ? 'text-gray-600' : 'text-gray-800'
+                              } text-center`}
                           >
                             {lbl}
                           </p>
@@ -182,7 +198,7 @@ const OrdersDetailed = () => {
                         <div key={idx} className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             <img
-                              src={itm.productInfo.image[0]}
+                              src={itm.productInfo.image}
                               alt={itm.productInfo.name}
                               className="w-16 h-16 object-cover rounded-md border"
                             />
@@ -222,7 +238,7 @@ const OrdersDetailed = () => {
                     <div className="mt-6 flex space-x-4 flex-wrap">
                       <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
                         <DownloadIcon className="w-5 h-5" />
-                        <span>Download Invoice</span>
+                        <span onClick={() => downloadInvoice({ invoiceId: _id })}>Download Invoice</span>
                       </button>
                       <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition">
                         <ExclamationCircleIcon className="w-5 h-5 text-gray-500" />
