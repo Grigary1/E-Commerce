@@ -38,7 +38,7 @@ const App = () => {
     loginModalVisible?setModalVisible(true):setModalVisible(false);
   },[loginModalVisible])
   return (
-    <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9nw]'>
+    <div >
       {isVisible && <Navbar />}
       <SearchBar />
       <ToastContainer />
