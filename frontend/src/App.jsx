@@ -20,6 +20,7 @@ import { shopContext } from './context/ShopContext'
 import Checkout from './pages/Checkout'
 import OrderPlaced from './pages/OrderPlaced'
 import Overview from './pages/Overview'
+import Categories from './pages/Categories'
 
 const App = () => {
   const location = useLocation();
@@ -47,6 +48,8 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/shop/:tag' element={<Overview />} />
         <Route path='/collection' element={<Collections />} />
+        <Route path='/categories' element={<Categories/>}/>
+        <Route path='/categories/:category' element={<Categories/>}/>
         <Route path='/collection/:category' element={<Collections />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />

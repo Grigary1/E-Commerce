@@ -20,6 +20,9 @@ const Collections = ({ searchResult }) => {
   useEffect(() => {
     getProductsData(page,'',10);
   }, [page])
+  useEffect(()=>{
+    console.log("filter ",filterProducts);
+  },[filterProducts])
   useEffect(() => {
     if (products.length) {
       setFilterProducts(products)
@@ -28,23 +31,23 @@ const Collections = ({ searchResult }) => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t">
+      <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t ml-20 mr-10">
         {/* Filter Sidebar */}
 
-        <Filter />
+        {/* <Filter /> */}
         {/* Main Content */}
         <div className="flex-1">
           {/* Header + Sort */}
           <div className="flex justify-between items-center text-base sm:text-2xl mb-4">
             <Title text1="ALL " text2="COLLECTIONS" />
-            <select
+            {/* <select
               onChange={(e) => setSortType(e.target.value)}
               className="border border-gray-300 text-sm px-2 py-1 rounded"
             >
               <option value="relevant">Sort By: Relevant</option>
               <option value="low-high">Sort By: Low to High</option>
               <option value="high-low">Sort By: High to Low</option>
-            </select>
+            </select> */}
           </div>
 
           {/* Product Grid */}

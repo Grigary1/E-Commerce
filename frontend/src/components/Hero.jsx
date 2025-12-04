@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   // Placeholder images - replace with your actual images
@@ -7,7 +8,7 @@ const Hero = () => {
     'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&h=800&fit=crop',
     'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&h=800&fit=crop'
   ]
-  
+  const navigate=useNavigate();
   const [idx, setIdx] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -170,9 +171,11 @@ const Hero = () => {
 
           {/* Category Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
             {categories.map(({ name, image, subtitle, color }, index) => (
               <div
                 key={index}
+                onClick={()=>navigate('/collection')} 
                 className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
