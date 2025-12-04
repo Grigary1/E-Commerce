@@ -20,9 +20,7 @@ const Collections = ({ searchResult }) => {
   useEffect(() => {
     getProductsData(page,'',10);
   }, [page])
-  useEffect(()=>{
-    console.log("filter ",filterProducts);
-  },[filterProducts])
+  
   useEffect(() => {
     if (products.length) {
       setFilterProducts(products)

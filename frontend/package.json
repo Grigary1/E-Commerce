@@ -6,6 +6,7 @@
     "@mui/material": "^7.1.1",
     "axios": "^1.7.9",
     "file-saver": "^2.0.5",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.513.0",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
