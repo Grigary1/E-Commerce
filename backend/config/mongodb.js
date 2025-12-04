@@ -8,8 +8,8 @@ const connectDB = async () => {
     try {
         await mongoose.connect(`${process.env.MONGODB_URL}/e-commerce`);
     } catch (error) {
-        console.log("Failed to connect : ",error.message);
-        process.exit(1);
+        console.log("Failed to connect : ",process.env.MONGODB_URL);
+        //process.exit(1);
     }
 }
 export default connectDB;

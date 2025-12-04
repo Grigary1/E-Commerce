@@ -24,7 +24,7 @@ app.use('/api/user',userRouter);
 app.use('/api/product',productRouter);
 app.use('/api',cartRouter)
 app.use('/api/orders',orderRouter);
-app.get('/api/invoices/download',downloadInvoice);
+// app.get('/api/invoices/download',downloadInvoice);
 //api endpoints
 app.get('/',(req,res)=>{
     res.send("API WORKING");
